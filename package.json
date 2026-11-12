@@ -1,0 +1,21 @@
+{
+  "name": "com.unityutilities.flexiblegridlayout",
+  "version": "1.0.0",
+  "displayName": "Flexible Grid Layout",
+  "description": "A smarter grid for Unity UI. Like the built-in Grid Layout Group, but cells can span multiple columns and rows, flow around larger elements with CSS-style auto-placement (dense packing), snap to fixed positions, and align the whole block inside its container.\n\nAdd via Add Component > Layout > Flexible Grid Layout Group, then add Flexible Grid Cell to any child to give it a span or a fixed slot.",
+  "unity": "2021.3",
+  "keywords": [
+    "layout",
+    "ui",
+    "ugui",
+    "grid",
+    "layoutgroup",
+    "gridlayout"
+  ],
+  "author": {
+    "name": "Unity Utilities"
+  },
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  }
+}

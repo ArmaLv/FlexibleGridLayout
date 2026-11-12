@@ -1,0 +1,19 @@
+{
+    "name": "UnityUtilities.FlexibleGridLayout.Editor",
+    "rootNamespace": "UnityUtilities.FlexibleGridLayout.EditorTools",
+    "references": [
+        "UnityUtilities.FlexibleGridLayout.Runtime",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
