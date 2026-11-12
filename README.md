@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="ImageAssets/Banner.png" alt="Flexible Grid Layout" width="100%">
+</p>
+
 # Flexible Grid Layout
 
 Based on Unity's built-in layout system, made for better grid / column editing and
@@ -29,6 +33,10 @@ grid icon in the Inspector, so they sit right alongside Unity's own layout compo
 
 ### Flexible Grid Layout Group
 
+<p align="center">
+  <img src="ImageAssets/FlexGridLayout-SS.png" alt="Flexible Grid Layout Group inspector" width="420">
+</p>
+
 | Property | What it does |
 |---|---|
 | **Padding** | Inner padding of the container. |
@@ -40,6 +48,10 @@ grid icon in the Inspector, so they sit right alongside Unity's own layout compo
 | **Content Alignment** | Horizontal/Vertical placement of the whole block inside the container. |
 
 ### Flexible Grid Cell
+
+<p align="center">
+  <img src="ImageAssets/FlexGridCell-SS.png" alt="Flexible Grid Cell inspector" width="420">
+</p>
 
 | Property | What it does |
 |---|---|
