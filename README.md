@@ -21,7 +21,7 @@ auto-placement. The base cell is uniform, but any child can be, for example, 2×
 **From git**
 1. `Window ▸ Package Manager`
 2. `+` ▸ **Add package from git URL…**
-3. Paste the repository URL, e.g. `https://github.com/<you>/FlexibleGridLayout.git`
+3. Paste the repository URL, e.g. `https://github.com/ArmaLv/FlexibleGridLayout.git`
 
 ## Usage
 
