@@ -13,6 +13,8 @@ namespace UnityUtilities.FlexibleGridLayout.EditorTools
         private SerializedProperty m_Padding;
         private SerializedProperty m_Columns;
         private SerializedProperty m_CellSize;
+        private SerializedProperty m_WidthMode;
+        private SerializedProperty m_HeightMode;
         private SerializedProperty m_Spacing;
         private SerializedProperty m_StartCorner;
         private SerializedProperty m_FillGaps;
@@ -24,6 +26,8 @@ namespace UnityUtilities.FlexibleGridLayout.EditorTools
             m_Padding = serializedObject.FindProperty("m_Padding");
             m_Columns = serializedObject.FindProperty("m_Columns");
             m_CellSize = serializedObject.FindProperty("m_CellSize");
+            m_WidthMode = serializedObject.FindProperty("m_WidthMode");
+            m_HeightMode = serializedObject.FindProperty("m_HeightMode");
             m_Spacing = serializedObject.FindProperty("m_Spacing");
             m_StartCorner = serializedObject.FindProperty("m_StartCorner");
             m_FillGaps = serializedObject.FindProperty("m_FillGaps");
@@ -42,7 +46,15 @@ namespace UnityUtilities.FlexibleGridLayout.EditorTools
             using (new EditorGUI.IndentLevelScope())
             {
                 EditorGUILayout.PropertyField(m_Columns, new GUIContent("Columns"));
-                EditorGUILayout.PropertyField(m_CellSize, new GUIContent("Cell Size"));
+                EditorGUILayout.PropertyField(m_CellSize, new GUIContent("Cell Size",
+                    "Reference size of one cell. Used directly in Fixed mode, and as the " +
+                    "aspect ratio in Aspect mode."));
+                EditorGUILayout.PropertyField(m_WidthMode, new GUIContent("Width Mode",
+                    "Fixed: use Cell Size. Expand: stretch cells to fill the container width. " +
+                    "Aspect: derive width from height using the Cell Size ratio."));
+                EditorGUILayout.PropertyField(m_HeightMode, new GUIContent("Height Mode",
+                    "Fixed: use Cell Size. Expand: stretch cells to fill the container height. " +
+                    "Aspect: derive height from width using the Cell Size ratio."));
                 EditorGUILayout.PropertyField(m_Spacing, new GUIContent("Spacing"));
                 EditorGUILayout.PropertyField(m_StartCorner, new GUIContent("Start Corner"));
                 EditorGUILayout.PropertyField(m_FillGaps, new GUIContent("Fill Gaps",

@@ -4,23 +4,30 @@ using UnityEngine.UI;
 
 namespace UnityUtilities.FlexibleGridLayout
 {
-    // A smarter grid than the stock GridLayoutGroup.
-    // Elements can span multiple columns/rows (span), and the rest flow around the
-    // big ones on their own - just like CSS grid auto-placement.
-    // The base cell is uniform (cellSize), but an element with FlexibleGridCell can be,
-    // for example, 2x1 (400x200) or 1x2 (200x400).
     [AddComponentMenu("Layout/Flexible Grid Layout Group")]
     public class FlexibleGridLayoutGroup : LayoutGroup
     {
-        // Which corner to start the layout from
         public enum Corner { UpperLeft = 0, UpperRight = 1, LowerLeft = 2, LowerRight = 3 }
 
         [SerializeField] protected Corner m_StartCorner = Corner.UpperLeft;
         public Corner startCorner { get { return m_StartCorner; } set { SetProperty(ref m_StartCorner, value); } }
 
         [SerializeField] protected Vector2 m_CellSize = new Vector2(100, 100);
-        // Size of one (1x1) cell
+
         public Vector2 cellSize { get { return m_CellSize; } set { SetProperty(ref m_CellSize, value); } }
+
+        //   Fixed  - always use Cell Size on this axis.
+        //   Expand - stretch to fill the container, divided evenly across columns/rows.
+        //   Aspect - derive from the OTHER axis, keeping the Cell Size aspect ratio.
+        public enum CellSizeMode { Fixed = 0, Expand = 1, Aspect = 2 }
+
+        [SerializeField] protected CellSizeMode m_WidthMode = CellSizeMode.Fixed;
+        // How the cell width is sized (see CellSizeMode).
+        public CellSizeMode widthMode { get { return m_WidthMode; } set { SetProperty(ref m_WidthMode, value); } }
+
+        [SerializeField] protected CellSizeMode m_HeightMode = CellSizeMode.Fixed;
+        // How the cell height is sized (see CellSizeMode).
+        public CellSizeMode heightMode { get { return m_HeightMode; } set { SetProperty(ref m_HeightMode, value); } }
 
         [SerializeField] protected Vector2 m_Spacing = Vector2.zero;
         // Spacing between cells on both axes
@@ -65,20 +72,21 @@ namespace UnityUtilities.FlexibleGridLayout
 
         public override void CalculateLayoutInputHorizontal()
         {
-            // Refresh the rectChildren list (base method)
             base.CalculateLayoutInputHorizontal();
 
-            // Compute the placement once - it does not depend on width
             ComputePlacement();
 
             float totalWidth = padding.horizontal + m_Columns * cellSize.x + (m_Columns - 1) * spacing.x;
-            SetLayoutInputForAxis(totalWidth, totalWidth, -1, 0);
+            float flexibleWidth = m_WidthMode == CellSizeMode.Expand ? 1 : -1;
+            SetLayoutInputForAxis(totalWidth, totalWidth, flexibleWidth, 0);
         }
 
         public override void CalculateLayoutInputVertical()
         {
             float totalHeight = padding.vertical + m_Rows * cellSize.y + (m_Rows - 1) * spacing.y;
-            SetLayoutInputForAxis(totalHeight, totalHeight, -1, 1);
+            // In Expand mode the grid has no intrinsic height - let a parent layout stretch it.
+            float flexibleHeight = m_HeightMode == CellSizeMode.Expand ? 1 : -1;
+            SetLayoutInputForAxis(totalHeight, totalHeight, flexibleHeight, 1);
         }
 
         public override void SetLayoutHorizontal()
@@ -172,7 +180,7 @@ namespace UnityUtilities.FlexibleGridLayout
             {
                 if (r >= grid.Count)
                 {
-                    continue; // rows that don't exist yet count as free
+                    continue;
                 }
                 for (int c = col; c < col + w; c++)
                 {
@@ -224,8 +232,11 @@ namespace UnityUtilities.FlexibleGridLayout
             int cols = Mathf.Max(1, m_Columns);
             int rows = m_Rows;
 
-            float requiredWidth = cols * cellSize.x + (cols - 1) * spacing.x;
-            float requiredHeight = rows * cellSize.y + (rows - 1) * spacing.y;
+            // Cell size can scale with the container depending on the per-axis modes.
+            Vector2 effectiveCell = GetEffectiveCellSize(cols, rows);
+
+            float requiredWidth = cols * effectiveCell.x + (cols - 1) * spacing.x;
+            float requiredHeight = rows * effectiveCell.y + (rows - 1) * spacing.y;
             Vector2 startOffset = new Vector2(
                 AlignedOffset(0, requiredWidth, AlignFactor(m_HorizontalAlign)),
                 AlignedOffset(1, requiredHeight, AlignFactor(m_VerticalAlign))
@@ -244,15 +255,56 @@ namespace UnityUtilities.FlexibleGridLayout
                 if (cornerY == 1) py = rows - cell.hSpan - cell.row;
 
                 // Element size based on span (including the spacing between occupied cells)
-                float w = cell.wSpan * cellSize.x + (cell.wSpan - 1) * spacing.x;
-                float h = cell.hSpan * cellSize.y + (cell.hSpan - 1) * spacing.y;
+                float w = cell.wSpan * effectiveCell.x + (cell.wSpan - 1) * spacing.x;
+                float h = cell.hSpan * effectiveCell.y + (cell.hSpan - 1) * spacing.y;
 
-                float xpos = startOffset.x + (cellSize.x + spacing.x) * px;
-                float ypos = startOffset.y + (cellSize.y + spacing.y) * py;
+                float xpos = startOffset.x + (effectiveCell.x + spacing.x) * px;
+                float ypos = startOffset.y + (effectiveCell.y + spacing.y) * py;
 
                 SetChildAlongAxis(rectChildren[i], 0, xpos, w);
                 SetChildAlongAxis(rectChildren[i], 1, ypos, h);
             }
+        }
+
+        // Calculates the effective cell size based on the current mode (Fixed, Expand, Aspect) and the container size.
+        private Vector2 GetEffectiveCellSize(int cols, int rows)
+        {
+            float cw = m_CellSize.x;
+            float ch = m_CellSize.y;
+
+            CellSizeMode wMode = m_WidthMode;
+            CellSizeMode hMode = m_HeightMode;
+
+            // Both axes can't derive from each other - keep width fixed to break the loop.
+            if (wMode == CellSizeMode.Aspect && hMode == CellSizeMode.Aspect)
+            {
+                wMode = CellSizeMode.Fixed;
+            }
+
+            Vector2 size = rectTransform.rect.size;
+
+            // Expand first, so an Aspect axis can read the resolved value of the other.
+            if (wMode == CellSizeMode.Expand)
+            {
+                float avail = size.x - padding.horizontal - (cols - 1) * spacing.x;
+                cw = cols > 0 ? Mathf.Max(0f, avail) / cols : 0f;
+            }
+            if (hMode == CellSizeMode.Expand)
+            {
+                float avail = size.y - padding.vertical - (rows - 1) * spacing.y;
+                ch = rows > 0 ? Mathf.Max(0f, avail) / rows : 0f;
+            }
+
+            if (wMode == CellSizeMode.Aspect && m_CellSize.y != 0f)
+            {
+                cw = ch * (m_CellSize.x / m_CellSize.y);
+            }
+            if (hMode == CellSizeMode.Aspect && m_CellSize.x != 0f)
+            {
+                ch = cw * (m_CellSize.y / m_CellSize.x);
+            }
+
+            return new Vector2(cw, ch);
         }
 
         // Aligns the whole content block inside the container.

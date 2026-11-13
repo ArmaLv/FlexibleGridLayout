@@ -41,11 +41,29 @@ grid icon in the Inspector, so they sit right alongside Unity's own layout compo
 |---|---|
 | **Padding** | Inner padding of the container. |
 | **Columns** | Fixed number of columns. Rows grow with the content. |
-| **Cell Size** | Size of one 1×1 cell. |
+| **Cell Size** | Reference size of one 1×1 cell. Used directly in *Fixed* mode, and as the aspect ratio in *Aspect* mode. |
+| **Width Mode** / **Height Mode** | How the cell scales on each axis — see below. |
 | **Spacing** | Gap between cells on each axis. |
 | **Start Corner** | Corner the layout fills from. |
 | **Fill Gaps** | On: slot smaller elements into free gaps (dense packing). Off: flow sequentially, leaving holes behind large elements. |
 | **Content Alignment** | Horizontal/Vertical placement of the whole block inside the container. |
+
+#### Cell scaling (Width Mode / Height Mode)
+
+By default cells keep a fixed size, so if the container is resized the grid does not
+reflow to fit — the buttons overflow or leave empty space. Set the per-axis mode to make
+cells adapt to the container:
+
+| Mode | What it does |
+|---|---|
+| **Fixed** | Always use **Cell Size** on this axis (the original behaviour). |
+| **Expand** | Stretch cells to fill the container on this axis, divided evenly across the columns (width) or rows (height), minus padding and spacing. |
+| **Aspect** | Derive this axis from the *other* axis, keeping the **Cell Size** aspect ratio. Handy to keep cells square while the other axis expands. |
+
+For example, a calculator keypad that fills its panel at any size: set **Width Mode** and
+**Height Mode** both to *Expand*. To keep square buttons while the width stretches, use
+**Width Mode = Expand** and **Height Mode = Aspect** (or vice-versa). Setting both axes to
+*Aspect* is ambiguous, so width falls back to *Fixed*.
 
 ### Flexible Grid Cell
 
@@ -68,5 +86,7 @@ grid icon in the Inspector, so they sit right alongside Unity's own layout compo
 
 Namespace `UnityUtilities.FlexibleGridLayout`. `FlexibleGridLayoutGroup` derives from
 `UnityEngine.UI.LayoutGroup`, so it works with `LayoutRebuilder` and the rest of the
-uGUI layout pipeline. Public properties (`columns`, `cellSize`, `spacing`, `fillGaps`,
-`startCorner`, `horizontalAlign`, `verticalAlign`) trigger a rebuild when changed.
+uGUI layout pipeline. Public properties (`columns`, `cellSize`, `widthMode`, `heightMode`,
+`spacing`, `fillGaps`, `startCorner`, `horizontalAlign`, `verticalAlign`) trigger a rebuild
+when changed. `widthMode` / `heightMode` are of type `FlexibleGridLayoutGroup.CellSizeMode`
+(`Fixed`, `Expand`, `Aspect`).
